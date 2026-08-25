@@ -31,7 +31,7 @@
 
 ```text
 codex plugin marketplace add <本仓库的绝对路径>
-codex plugin add document-smart-reader@personal
+codex plugin add document-smart-reader@document-smart-reader
 ```
 
 安装后新建一个 Codex 任务，让系统重新发现 Skill。

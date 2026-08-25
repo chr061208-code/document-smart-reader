@@ -36,7 +36,7 @@ Clone this repository, then add its repo-local marketplace and install the plugi
 
 ```text
 codex plugin marketplace add <absolute-path-to-this-repository>
-codex plugin add document-smart-reader@personal
+codex plugin add document-smart-reader@document-smart-reader
 ```
 
 Start a new Codex task after installation so the skill is discovered.

@@ -86,6 +86,7 @@ class PackagingTests(unittest.TestCase):
         self.assertEqual(plugin["name"], "document-smart-reader")
         self.assertEqual(plugin["version"], "0.2.0")
         self.assertEqual(plugin["license"], "MIT")
+        self.assertEqual(marketplace["name"], "document-smart-reader")
         self.assertEqual(marketplace["plugins"][0]["name"], plugin["name"])
 
 
