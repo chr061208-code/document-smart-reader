@@ -1,0 +1,28 @@
+{
+  "name": "document-smart-reader",
+  "version": "0.2.0",
+  "description": "Token-efficient, page-aware local reading for PDF and DOCX files.",
+  "author": {
+    "name": "chr061208-code",
+    "url": "https://github.com/chr061208-code"
+  },
+  "homepage": "https://github.com/chr061208-code/document-smart-reader",
+  "repository": "https://github.com/chr061208-code/document-smart-reader",
+  "license": "MIT",
+  "keywords": ["pdf", "docx", "markdown", "retrieval", "local-first", "token-efficiency"],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Document Smart Reader",
+    "shortDescription": "Read long PDF and Word files with less context.",
+    "longDescription": "Builds a local page-aware Markdown cache, retrieves only relevant chunks, and routes layout-sensitive evidence to visual verification.",
+    "developerName": "chr061208-code",
+    "category": "Productivity",
+    "capabilities": ["Local document indexing", "Selective retrieval", "Page-aware citations"],
+    "defaultPrompt": [
+      "Read this PDF efficiently and cite the relevant pages.",
+      "Search this Word document without loading the whole file.",
+      "Summarize this document and verify layout-sensitive evidence."
+    ],
+    "brandColor": "#2563EB"
+  }
+}

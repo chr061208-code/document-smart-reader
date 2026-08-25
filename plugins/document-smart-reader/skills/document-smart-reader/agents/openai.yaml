@@ -1,0 +1,7 @@
+interface:
+  display_name: "智能文档阅读器"
+  short_description: "按需读取 PDF/Word，兼顾准确性与 Token"
+  default_prompt: "Use $document-smart-reader to index this document locally, read only the relevant chunks, and verify layout-sensitive evidence against the source pages."
+  brand_color: "#2563EB"
+policy:
+  allow_implicit_invocation: true
