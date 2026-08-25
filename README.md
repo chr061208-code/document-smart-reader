@@ -32,14 +32,20 @@ Scanned PDFs are detected as low/no-text pages but OCR is not bundled in this re
 
 ## Install as a Codex plugin
 
-Clone this repository, then add its repo-local marketplace and install the plugin:
+Install the published Git marketplace directly from GitHub:
 
 ```text
-codex plugin marketplace add <absolute-path-to-this-repository>
+codex plugin marketplace add chr061208-code/document-smart-reader --ref v0.2.0
 codex plugin add document-smart-reader@document-smart-reader
 ```
 
 Start a new Codex task after installation so the skill is discovered.
+
+For local development, clone the repository and replace the first command with:
+
+```text
+codex plugin marketplace add <absolute-path-to-this-repository>
+```
 
 ## Install only the skill
 

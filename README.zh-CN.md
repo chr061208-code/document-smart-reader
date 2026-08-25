@@ -27,14 +27,20 @@
 
 ## 作为 Codex 插件安装
 
-克隆仓库后执行：
+直接从 GitHub 发布版本安装：
 
 ```text
-codex plugin marketplace add <本仓库的绝对路径>
+codex plugin marketplace add chr061208-code/document-smart-reader --ref v0.2.0
 codex plugin add document-smart-reader@document-smart-reader
 ```
 
 安装后新建一个 Codex 任务，让系统重新发现 Skill。
+
+如需本地开发，可先克隆仓库，并把第一条命令替换为：
+
+```text
+codex plugin marketplace add <本仓库的绝对路径>
+```
 
 ## 只安装 Skill
 
