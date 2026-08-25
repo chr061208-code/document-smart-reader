@@ -1,6 +1,6 @@
 {
   "name": "document-smart-reader",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Token-efficient, page-aware local reading for PDF and DOCX files.",
   "author": {
     "name": "chr061208-code",

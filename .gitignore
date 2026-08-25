@@ -3,10 +3,12 @@ __pycache__/
 .document-reader-cache/
 .pytest_cache/
 .test-deps/
+.build-deps/
 .venv/
 venv/
 dist/
 build/
 *.egg-info/
+*.spec
 .DS_Store
 Thumbs.db

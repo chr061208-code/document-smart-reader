@@ -1,11 +1,17 @@
 # Document Smart Reader
 
-Local-first, page-aware document reading for Codex. It converts PDF and DOCX files into a reusable Markdown cache, retrieves only the chunks relevant to the current question, and asks Codex to visually verify pages where layout can change meaning.
+Local-first, page-aware document reading for everyone. Use the standalone Windows desktop app without Codex, or install the Codex skill/plugin. It converts PDF and DOCX files into a reusable Markdown cache and retrieves only the chunks relevant to the current question.
 
 [![test](https://github.com/chr061208-code/document-smart-reader/actions/workflows/test.yml/badge.svg)](https://github.com/chr061208-code/document-smart-reader/actions/workflows/test.yml)
 [![license: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
 [简体中文](README.zh-CN.md)
+
+## Windows desktop app (no Codex required)
+
+Download `DocumentSmartReader.exe` from [GitHub Releases](https://github.com/chr061208-code/document-smart-reader/releases/latest). Choose a PDF or DOCX, build its local index, search for evidence, and copy a page-aware prompt into ChatGPT, Claude, or another AI.
+
+The desktop app contains no AI model and needs no API key. It performs local retrieval; users remain free to choose where to paste the resulting evidence. See the [desktop guide](desktop/README.zh-CN.md).
 
 ## Why
 
@@ -35,7 +41,7 @@ Scanned PDFs are detected as low/no-text pages but OCR is not bundled in this re
 Install the published Git marketplace directly from GitHub:
 
 ```text
-codex plugin marketplace add chr061208-code/document-smart-reader --ref v0.2.0
+codex plugin marketplace add chr061208-code/document-smart-reader --ref v0.3.0
 codex plugin add document-smart-reader@document-smart-reader
 ```
 

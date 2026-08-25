@@ -22,7 +22,7 @@ from pathlib import Path
 
 SUPPORTED = {".pdf", ".docx"}
 DEFAULT_CHUNK_CHARS = 6000
-TOOL_VERSION = "0.2.0"
+TOOL_VERSION = "0.3.0"
 
 # Some PDFs contain incomplete font descriptors. pdfminer can still extract
 # their text, but otherwise emits one warning per glyph/page and obscures the
@@ -240,25 +240,30 @@ def make_snippet(text: str, question: str, query_terms: list[str], width: int = 
     return f"{prefix}{compact[start:end]}{suffix}"
 
 
-def prepare(args: argparse.Namespace) -> int:
-    source = Path(args.file).expanduser().resolve()
+def prepare_document(
+    file: str | Path,
+    output: str | Path | None = None,
+    chunk_chars: int = DEFAULT_CHUNK_CHARS,
+    force: bool = False,
+) -> dict:
+    """Extract and index a document, returning a JSON-serializable summary."""
+    source = Path(file).expanduser().resolve()
     if not source.is_file():
         raise FileNotFoundError(source)
     if source.suffix.lower() not in SUPPORTED:
         raise ValueError(f"Unsupported format: {source.suffix}. Supported: {', '.join(sorted(SUPPORTED))}")
 
     digest = file_hash(source)
-    cache_root = Path(args.output).expanduser().resolve() if args.output else default_cache_root()
+    cache_root = Path(output).expanduser().resolve() if output else default_cache_root()
     reader_dir = cache_root / f"{source.stem}-{digest[:12]}"
     manifest_path = reader_dir / "manifest.json"
-    if manifest_path.exists() and not args.force:
+    if manifest_path.exists() and not force:
         try:
             existing = json.loads(manifest_path.read_text(encoding="utf-8"))
         except (OSError, json.JSONDecodeError):
             existing = {}
         if existing.get("tool_version") == TOOL_VERSION:
-            print(json.dumps({"status": "reused", "reader_dir": str(reader_dir), "manifest": str(manifest_path)}, ensure_ascii=False, indent=2))
-            return 0
+            return {"status": "reused", "reader_dir": str(reader_dir), "manifest": str(manifest_path)}
 
     reader_dir.mkdir(parents=True, exist_ok=True)
     extraction_source = source
@@ -276,7 +281,7 @@ def prepare(args: argparse.Namespace) -> int:
     else:
         pages, warnings = extract_pdf(source)
 
-    chunks = make_chunks(pages, args.chunk_chars)
+    chunks = make_chunks(pages, chunk_chars)
     chunks_dir = reader_dir / "chunks"
     if chunks_dir.exists():
         shutil.rmtree(chunks_dir)
@@ -306,7 +311,7 @@ def prepare(args: argparse.Namespace) -> int:
         "extraction_source": str(extraction_source),
         "page_count": len(pages) if pages and pages[0].get("page") is not None else None,
         "chunk_count": len(chunks),
-        "chunk_target_chars": args.chunk_chars,
+        "chunk_target_chars": chunk_chars,
         "character_count": len(document_md),
         "warnings": warnings,
         "quality": {
@@ -318,16 +323,22 @@ def prepare(args: argparse.Namespace) -> int:
         "chunks": [{key: chunk[key] for key in ("id", "file", "page_start", "page_end", "chars", "flags")} for chunk in chunks],
     }
     manifest_path.write_text(json.dumps(manifest, ensure_ascii=False, indent=2), encoding="utf-8")
-    print(json.dumps({"status": "created", "reader_dir": str(reader_dir), "manifest": str(manifest_path), "summary": {
+    return {"status": "created", "reader_dir": str(reader_dir), "manifest": str(manifest_path), "summary": {
         "pages": manifest["page_count"], "chunks": len(chunks), "characters": len(document_md), "warnings": len(warnings), "visual_review_candidates": len(review_pages)
-    }}, ensure_ascii=False, indent=2))
+    }}
+
+
+def prepare(args: argparse.Namespace) -> int:
+    result = prepare_document(args.file, args.output, args.chunk_chars, args.force)
+    print(json.dumps(result, ensure_ascii=False, indent=2))
     return 0
 
 
-def query(args: argparse.Namespace) -> int:
-    reader_dir = Path(args.reader_dir).expanduser().resolve()
+def query_reader(reader_dir: str | Path, question: str, limit: int = 3) -> dict:
+    """Rank relevant chunks for a question without printing document contents."""
+    reader_dir = Path(reader_dir).expanduser().resolve()
     index = json.loads((reader_dir / "index.json").read_text(encoding="utf-8"))
-    query_terms = tokenize(args.question)
+    query_terms = tokenize(question)
     if not query_terms:
         raise ValueError("Question contains no searchable terms")
     total = max(1, len(index))
@@ -336,7 +347,7 @@ def query(args: argparse.Namespace) -> int:
         for term in set(record["terms"]):
             doc_frequency[term] += 1
     results = []
-    normalized_query = re.sub(r"\s+", "", args.question.lower())
+    normalized_query = re.sub(r"\s+", "", question.lower())
     for record in index:
         score = 0.0
         for term in query_terms:
@@ -348,15 +359,20 @@ def query(args: argparse.Namespace) -> int:
         if normalized_query and normalized_query in re.sub(r"\s+", "", text.lower()):
             score += 8.0
         if score > 0:
-            snippet = make_snippet(text, args.question, query_terms)
+            snippet = make_snippet(text, question, query_terms)
             results.append({
                 "score": round(score, 4), "id": record["id"], "file": str(chunk_path),
                 "page_start": record["page_start"], "page_end": record["page_end"],
                 "chars": record["chars"], "flags": record["flags"], "snippet": snippet,
             })
     results.sort(key=lambda item: (-item["score"], item["id"]))
-    selected = results[: args.limit]
-    print(json.dumps({"question": args.question, "reader_dir": str(reader_dir), "result_count": len(selected), "results": selected}, ensure_ascii=False, indent=2))
+    selected = results[:limit]
+    return {"question": question, "reader_dir": str(reader_dir), "result_count": len(selected), "results": selected}
+
+
+def query(args: argparse.Namespace) -> int:
+    result = query_reader(args.reader_dir, args.question, args.limit)
+    print(json.dumps(result, ensure_ascii=False, indent=2))
     return 0
 
 

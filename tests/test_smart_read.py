@@ -15,6 +15,12 @@ smart_read = importlib.util.module_from_spec(SPEC)
 assert SPEC and SPEC.loader
 SPEC.loader.exec_module(smart_read)
 
+DESKTOP_SCRIPT = ROOT / "desktop" / "document_smart_reader.py"
+DESKTOP_SPEC = importlib.util.spec_from_file_location("document_smart_reader", DESKTOP_SCRIPT)
+desktop = importlib.util.module_from_spec(DESKTOP_SPEC)
+assert DESKTOP_SPEC and DESKTOP_SPEC.loader
+DESKTOP_SPEC.loader.exec_module(desktop)
+
 
 class SmartReadUnitTests(unittest.TestCase):
     def test_normalize_text(self):
@@ -64,7 +70,7 @@ class SmartReadEndToEndTests(unittest.TestCase):
             self.assertEqual(created["status"], "created")
             reader_dir = Path(created["reader_dir"])
             manifest = json.loads((reader_dir / "manifest.json").read_text(encoding="utf-8"))
-            self.assertEqual(manifest["tool_version"], "0.2.0")
+            self.assertEqual(manifest["tool_version"], "0.3.0")
             self.assertEqual(manifest["page_count"], 2)
 
             query_args = argparse.Namespace(reader_dir=str(reader_dir), question="threshold 0.73", limit=1)
@@ -78,13 +84,40 @@ class SmartReadEndToEndTests(unittest.TestCase):
                 self.assertEqual(smart_read.prepare(args), 0)
             self.assertEqual(json.loads(output.getvalue())["status"], "reused")
 
+    def test_programmatic_api(self):
+        from reportlab.lib.pagesizes import A4
+        from reportlab.pdfgen import canvas
+
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            source = root / "api.pdf"
+            pdf = canvas.Canvas(str(source), pagesize=A4)
+            pdf.drawString(72, 780, "The audit finding requires a corrective action plan.")
+            pdf.save()
+            prepared = smart_read.prepare_document(source, root / "cache")
+            queried = smart_read.query_reader(prepared["reader_dir"], "corrective action", 1)
+            self.assertEqual(queried["result_count"], 1)
+            self.assertIn("corrective action", queried["results"][0]["snippet"])
+
+
+class DesktopHelperTests(unittest.TestCase):
+    def test_prompt_contains_source_page_and_evidence(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            chunk = Path(temporary) / "chunk.md"
+            chunk.write_text("<!-- source-page: 7 -->\n\nImportant evidence.", encoding="utf-8")
+            result = {"file": str(chunk), "page_start": 7, "page_end": 7, "snippet": "Important evidence."}
+            prompt = desktop.build_evidence_prompt("report.pdf", "What matters?", [result], full=False)
+            self.assertIn("report.pdf", prompt)
+            self.assertIn("第 7 页", prompt)
+            self.assertIn("Important evidence.", prompt)
+
 
 class PackagingTests(unittest.TestCase):
     def test_plugin_manifest_and_marketplace(self):
         plugin = json.loads((ROOT / "plugins" / "document-smart-reader" / ".codex-plugin" / "plugin.json").read_text(encoding="utf-8"))
         marketplace = json.loads((ROOT / ".agents" / "plugins" / "marketplace.json").read_text(encoding="utf-8"))
         self.assertEqual(plugin["name"], "document-smart-reader")
-        self.assertEqual(plugin["version"], "0.2.0")
+        self.assertEqual(plugin["version"], "0.3.0")
         self.assertEqual(plugin["license"], "MIT")
         self.assertEqual(marketplace["name"], "document-smart-reader")
         self.assertEqual(marketplace["plugins"][0]["name"], plugin["name"])

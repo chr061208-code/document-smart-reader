@@ -1,6 +1,12 @@
 # Document Smart Reader（智能文档阅读器）
 
-这是一个面向 Codex 的本地优先文档阅读 Skill。它把 PDF、DOCX 转成带来源页码的 Markdown 缓存，只检索当前问题需要的片段，并在表格、公式、图表或复杂排版可能影响含义时要求核对原页面。
+这是一个本地优先的智能文档阅读器。普通用户可直接运行 Windows 桌面版；Codex 用户也可安装 Skill/插件。它把 PDF、DOCX 转成带来源页码的 Markdown 缓存，只检索当前问题需要的片段，并在表格、公式、图表或复杂排版可能影响含义时要求核对原页面。
+
+## Windows 桌面版（不需要 Codex）
+
+从 [GitHub Releases](https://github.com/chr061208-code/document-smart-reader/releases/latest) 下载 `DocumentSmartReader.exe`，双击即可使用：选择文档、建立索引、搜索相关原文，再把带页码的证据复制给 ChatGPT、Claude 或其他 AI。
+
+桌面版不包含 AI 模型，也不要求 API Key。它负责在本地准确、节省地找证据；最终回答可由用户选择的任意 AI 完成。详细说明见 [`desktop/README.zh-CN.md`](desktop/README.zh-CN.md)。
 
 ## 它为什么能节省 Token
 
@@ -30,7 +36,7 @@
 直接从 GitHub 发布版本安装：
 
 ```text
-codex plugin marketplace add chr061208-code/document-smart-reader --ref v0.2.0
+codex plugin marketplace add chr061208-code/document-smart-reader --ref v0.3.0
 codex plugin add document-smart-reader@document-smart-reader
 ```
 
